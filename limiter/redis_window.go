@@ -37,7 +37,7 @@ func (r *RedisLimiter) GetMatchedRule(path string) *config.Rule {
 func (r *RedisLimiter) Allow(ctx context.Context, path string) (bool, error) {
 	rule := r.GetMatchedRule(path)
 	if rule == nil {
-		logger.GlobalLogger.Info(fmt.Sprintf("%s pass successfully.", path))
+		logger.GlobalLogger.Info(fmt.Sprintf("%s not in rules.", path))
 		return true, nil
 	}
 
@@ -68,9 +68,10 @@ func (r *RedisLimiter) Allow(ctx context.Context, path string) (bool, error) {
 	script := redis.NewScript(luaScript)
 	res, err := script.Run(ctx, r.Client, []string{zKey}, now, window, rule.Limit, expire).Int()
 	if err != nil {
+		logger.GlobalLogger.Info(fmt.Sprintf("%s pass failed.", path))
 		return false, err
 	}
-
+	logger.GlobalLogger.Info(fmt.Sprintf("%s pass successfully.", path))
 	return res == 1, nil
 }
 
