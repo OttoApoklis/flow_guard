@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"context"
-	"flow_guard/limiter"
+	"github.com/OttoApoklis/flow_guard/limiter"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

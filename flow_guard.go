@@ -2,10 +2,10 @@ package flow_guard
 
 import (
 	"context"
-	"flow_guard/config"
-	"flow_guard/limiter"
-	"flow_guard/middleware"
 	"fmt"
+	"github.com/OttoApoklis/flow_guard/config"
+	"github.com/OttoApoklis/flow_guard/limiter"
+	"github.com/OttoApoklis/flow_guard/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )

@@ -2,7 +2,7 @@ package limiter
 
 import (
 	"context"
-	"flow_guard/config"
+	"github.com/OttoApoklis/flow_guard/config"
 	"time"
 
 	"github.com/redis/go-redis/v9"
