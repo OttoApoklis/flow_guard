@@ -1,0 +1,11 @@
+redis_addr: "localhost:7000"
+redis_password: "your_strong_password_here"
+
+rules:
+  - path: /api/user/*
+    limit: 10
+    window: 60
+
+  - path: /api/order/create
+    limit: 3
+    window: 30
