@@ -13,6 +13,7 @@ import (
 func NewRateLimiter(l *limiter.RedisLimiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.FullPath()
+		fmt.Sprintf("路由：%s", path)
 		logger.GlobalLogger.Info(fmt.Sprintf("this path: %s", path))
 		if path == "" {
 			path = c.Request.URL.Path

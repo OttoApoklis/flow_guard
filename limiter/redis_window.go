@@ -36,6 +36,7 @@ func (r *RedisLimiter) GetMatchedRule(path string) *config.Rule {
 
 func (r *RedisLimiter) Allow(ctx context.Context, path string) (bool, error) {
 	rule := r.GetMatchedRule(path)
+	fmt.Sprintf("in allow logic this path: %s", path)
 	logger.GlobalLogger.Info(fmt.Sprintf("in allow logic this path: %s", path))
 	if rule == nil {
 		logger.GlobalLogger.Info(fmt.Sprintf("%s not in rules.", path))
