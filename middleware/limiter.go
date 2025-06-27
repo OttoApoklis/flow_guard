@@ -2,7 +2,9 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"github.com/OttoApoklis/flow_guard/limiter"
+	logger "github.com/OttoApoklis/flow_guard/log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,6 +13,7 @@ import (
 func NewRateLimiter(l *limiter.RedisLimiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.FullPath()
+		logger.GlobalLogger.Info(fmt.Sprintf("this path: %s", path))
 		if path == "" {
 			path = c.Request.URL.Path
 		}
