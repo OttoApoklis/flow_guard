@@ -1,4 +1,4 @@
-module flow_guard
+module github.com/OttoApoklis/flow_guard
 
 go 1.20
 
