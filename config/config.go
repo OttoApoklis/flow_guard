@@ -13,6 +13,7 @@ type Rule struct {
 
 type FlowGuardConfig struct {
 	RedisAddr string `yaml:"redis_addr"`
+	Password  string `yaml:"password"`
 	Rules     []Rule `yaml:"rules"`
 }
 

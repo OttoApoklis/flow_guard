@@ -24,8 +24,8 @@ import (
 func main() {
     cfg, _ := config.LoadConfig("config.yml")
 
-    rdb := redis.NewClient(&redis.Options{Addr: cfg.RedisAddr})
-    rl := limiter.NewRedisLimiter(rdb, cfg.Rules)
+    rdb := redis.NewClient(&redis.Options{Addr: cfg.FlowGuard.RedisAddr,  Password: cfg.FlowGuard.Password})
+    rl := limiter.NewRedisLimiter(rdb, cfg.FlowGuard.Rules)
 
     r := gin.Default()
     r.Use(middleware.NewRateLimiter(rl))
