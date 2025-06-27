@@ -14,7 +14,7 @@ import (
 var ctx = context.Background()
 
 // Init 启动 flow_guard，只需传入配置文件路径
-func Init(configPath string) error {
+func Init(configPath string, c *gin.Engine) error {
 	// 1. 加载配置
 	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
@@ -45,7 +45,6 @@ func Init(configPath string) error {
 
 	rl := limiter.NewRedisLimiter(rdb, cfg.FlowGuard.Rules)
 
-	r := gin.Default()
-	r.Use(middleware.NewRateLimiter(rl))
+	c.Use(middleware.NewRateLimiter(rl))
 	return nil
 }
