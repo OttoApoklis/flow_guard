@@ -11,10 +11,19 @@ type Rule struct {
 	Window int    `yaml:"window"`
 }
 
+type LogConfig struct {
+	Level      string `yaml:"level"`
+	File       string `yaml:"file"`
+	MaxSize    int    `yaml:"max_size"`
+	MaxBackups int    `yaml:"max_backups"`
+	MaxAge     int    `yaml:"max_age"`
+}
+
 type FlowGuardConfig struct {
-	RedisAddr string `yaml:"redis_addr"`
-	Password  string `yaml:"password"`
-	Rules     []Rule `yaml:"rules"`
+	RedisAddr string    `yaml:"redis_addr"`
+	Password  string    `yaml:"password"`
+	Rules     []Rule    `yaml:"rules"`
+	LogConfig LogConfig `yaml:"log"`
 }
 
 type Config struct {

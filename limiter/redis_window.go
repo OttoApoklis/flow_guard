@@ -2,7 +2,9 @@ package limiter
 
 import (
 	"context"
+	"fmt"
 	"github.com/OttoApoklis/flow_guard/config"
+	logger "github.com/OttoApoklis/flow_guard/log"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -35,6 +37,7 @@ func (r *RedisLimiter) GetMatchedRule(path string) *config.Rule {
 func (r *RedisLimiter) Allow(ctx context.Context, path string) (bool, error) {
 	rule := r.GetMatchedRule(path)
 	if rule == nil {
+		logger.GlobalLogger.Info(fmt.Sprintf("%s pass successfully.", path))
 		return true, nil
 	}
 

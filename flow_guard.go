@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/OttoApoklis/flow_guard/config"
 	"github.com/OttoApoklis/flow_guard/limiter"
+	logger "github.com/OttoApoklis/flow_guard/log"
 	"github.com/OttoApoklis/flow_guard/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -17,8 +18,18 @@ func Init(configPath string) error {
 	// 1. 加载配置
 	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
+		return fmt.Errorf("failed to load flow_guard config: %w", err)
 	}
+
+	// 2.初始化日志配置
+
+	if err := logger.InitLogger(cfg); err != nil {
+		fmt.Printf("Error initializing logger: %v\n", err)
+		return fmt.Errorf("failed to load flow_guard log config: %w", err)
+	}
+
+	// 记录日志
+	logger.GlobalLogger.Info("FlowGuard started successfully.")
 
 	// 2. 初始化 Redis 客户端
 	rdb := redis.NewClient(&redis.Options{
