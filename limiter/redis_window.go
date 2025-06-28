@@ -71,12 +71,12 @@ func (r *RedisLimiter) Allow(ctx context.Context, path string) (bool, error) {
 	script := redis.NewScript(luaScript)
 	res, err := script.Run(ctx, r.Client, []string{zKey}, now, window, rule.Limit, expire).Int()
 	if err != nil {
-		logger.GlobalLogger.Info(fmt.Sprintf("%s pass failed.", path))
+		logger.GlobalLogger.Info(fmt.Sprintf("%s pass failed. limite : %v", path, rule))
 		return false, err
 	}
-	logger.GlobalLogger.Info(fmt.Sprintf("%s pass successfully.", path))
+	logger.GlobalLogger.Info(fmt.Sprintf("%s pass successfully. limite : %v", path, rule))
 	// 上报限流事件到伽利略
-	report := galileo.NewReporter("appID", "token", "URL")
+	report := galileo.GetReporter()
 	report.ReportRateLimitEvent(path, res == 1)
 	return res == 1, nil
 }
