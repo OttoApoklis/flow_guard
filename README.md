@@ -28,6 +28,12 @@ flow_guard:
     max_age: 7
 
 ```
+```go.mod
+require (
+	github.com/OttoApoklis/flow_guard v0.3.0
+	)
+```
+
 
 ```
 import "github.com/OttoApoklis/flow_guard"
