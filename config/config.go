@@ -19,11 +19,18 @@ type LogConfig struct {
 	MaxAge     int    `yaml:"max_age"`
 }
 
+type GalileoConfig struct {
+	AppID  string `yaml:"app_id"`
+	Token  string `yaml:"token"`
+	APIURL string `yaml:"apiurl"`
+}
+
 type FlowGuardConfig struct {
-	RedisAddr string    `yaml:"redis_addr"`
-	Password  string    `yaml:"password"`
-	Rules     []Rule    `yaml:"rules"`
-	LogConfig LogConfig `yaml:"log"`
+	RedisAddr string        `yaml:"redis_addr"`
+	Password  string        `yaml:"password"`
+	Rules     []Rule        `yaml:"rules"`
+	LogConfig LogConfig     `yaml:"log"`
+	Galileo   GalileoConfig `yaml:"galileo"`
 }
 
 type Config struct {

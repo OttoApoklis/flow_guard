@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/OttoApoklis/flow_guard/config"
+	"github.com/OttoApoklis/flow_guard/galileo"
 	logger "github.com/OttoApoklis/flow_guard/log"
-	"time"
-
 	"github.com/redis/go-redis/v9"
+	"time"
 )
 
 type RedisLimiter struct {
-	Client *redis.Client
-	Rules  []config.Rule
+	Client  *redis.Client
+	Rules   []config.Rule
+	Galileo config.GalileoConfig
 }
 
 func NewRedisLimiter(client *redis.Client, rules []config.Rule) *RedisLimiter {
@@ -74,6 +75,9 @@ func (r *RedisLimiter) Allow(ctx context.Context, path string) (bool, error) {
 		return false, err
 	}
 	logger.GlobalLogger.Info(fmt.Sprintf("%s pass successfully.", path))
+	// 上报限流事件到伽利略
+	report := galileo.NewReporter("appID", "token", "URL")
+	report.ReportRateLimitEvent(path, res == 1)
 	return res == 1, nil
 }
 
