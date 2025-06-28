@@ -7,6 +7,7 @@ import (
 	"github.com/OttoApoklis/flow_guard/galileo"
 	"github.com/OttoApoklis/flow_guard/limiter"
 	logger "github.com/OttoApoklis/flow_guard/log"
+	"github.com/OttoApoklis/flow_guard/uuid"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -14,6 +15,7 @@ var ctx = context.Background()
 
 // Init 启动 flow_guard，只需传入配置文件路径
 func Init(configPath string) (*limiter.RedisLimiter, error) {
+	uuid.InitUUID()
 	// 1. 加载配置
 	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
