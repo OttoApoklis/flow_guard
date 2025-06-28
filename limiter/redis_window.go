@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/OttoApoklis/flow_guard/config"
+	logger "github.com/OttoApoklis/flow_guard/log"
 	"github.com/OttoApoklis/flow_guard/uuid"
 	"github.com/redis/go-redis/v9"
 	"strconv"
@@ -53,7 +54,7 @@ func (r *RedisLimiter) Allow(ctx context.Context, key string) (bool, error) {
 	expireTimeSec := int64(windowSize/time.Second) + 1      // 过期时间（秒）
 	id := uuid.GetUUID()                                    // 唯一 ID（如 Snowflake）
 	member := fmt.Sprintf("%d-%s", now, id)                 // 唯一成员标识
-
+	logger.GlobalLogger.Info(fmt.Sprintf("member: %s", member))
 	// 执行 Lua 脚本
 	result, err := slidingWindowScript.Run(ctx, client, []string{key},
 		strconv.FormatInt(windowStart, 10),   // ARGV[1] windowStart
@@ -71,7 +72,7 @@ func (r *RedisLimiter) Allow(ctx context.Context, key string) (bool, error) {
 	if !ok {
 		return false, fmt.Errorf("invalid result type: %T", result)
 	}
-
+	logger.GlobalLogger.Info(fmt.Sprintf("count: %d", count))
 	// 判断是否超过最大请求数
 	return count < int64(r.Rules[0].Limit), nil
 }

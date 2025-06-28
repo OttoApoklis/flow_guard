@@ -6,8 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="a75e94b1-ec04-43e4-83aa-93175d9228c6" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/limiter/redis_window.go" beforeDir="false" afterPath="$PROJECT_DIR$/limiter/redis_window.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -53,6 +51,9 @@
   }
 }]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\code\flow_guard\UUID" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\code\flow_guard\limiter" />
     </key>
