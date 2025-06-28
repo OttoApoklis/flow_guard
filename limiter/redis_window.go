@@ -15,6 +15,7 @@ type RedisLimiter struct {
 	Rules  []config.Rule
 }
 
+// 创建一个新的 Redis 限流器
 func NewRedisLimiter(client *redis.Client, rules []config.Rule) *RedisLimiter {
 	return &RedisLimiter{
 		Client: client,
@@ -22,9 +23,11 @@ func NewRedisLimiter(client *redis.Client, rules []config.Rule) *RedisLimiter {
 	}
 }
 
+// 获取匹配的规则，如果路径是通配符路径，也会进行匹配
 func (r *RedisLimiter) GetMatchedRule(path string) *config.Rule {
 	var match *config.Rule
 	for _, rule := range r.Rules {
+		// 精确匹配路径或匹配通配符路径
 		if rule.Path == path || (len(rule.Path) > 0 && rule.Path[len(rule.Path)-1] == '*' && matchPrefix(path, rule.Path[:len(rule.Path)-1])) {
 			if match == nil || len(rule.Path) > len(match.Path) {
 				match = &rule
@@ -34,15 +37,15 @@ func (r *RedisLimiter) GetMatchedRule(path string) *config.Rule {
 	return match
 }
 
-func (r *RedisLimiter) Allow(ctx context.Context, path string) (bool, error) {
+// 判断路径是否需要限流（拦截）
+func (r *RedisLimiter) ShouldLimit(path string) (bool, error) {
 	rule := r.GetMatchedRule(path)
-	fmt.Sprintf("in allow logic this path: %s", path)
-	logger.GlobalLogger.Info(fmt.Sprintf("in allow logic this path: %s", path))
 	if rule == nil {
-		logger.GlobalLogger.Info(fmt.Sprintf("%s not in rules.", path))
-		return true, nil
+		// 如果没有匹配的规则，则不进行限流
+		return false, nil
 	}
 
+	// 如果找到了匹配的规则，则执行限流判断
 	now := time.Now().UnixNano()
 	zKey := "limiter:" + path
 	window := int64(rule.Window) * int64(time.Second)
@@ -68,7 +71,7 @@ func (r *RedisLimiter) Allow(ctx context.Context, path string) (bool, error) {
     `
 
 	script := redis.NewScript(luaScript)
-	res, err := script.Run(ctx, r.Client, []string{zKey}, now, window, rule.Limit, expire).Int()
+	res, err := script.Run(context.Background(), r.Client, []string{zKey}, now, window, rule.Limit, expire).Int()
 	if err != nil {
 		logger.GlobalLogger.Info(fmt.Sprintf("%s pass failed.", path))
 		return false, err
@@ -77,6 +80,7 @@ func (r *RedisLimiter) Allow(ctx context.Context, path string) (bool, error) {
 	return res == 1, nil
 }
 
+// 辅助函数：判断路径前缀是否匹配
 func matchPrefix(s, prefix string) bool {
 	return len(s) >= len(prefix) && s[:len(prefix)] == prefix
 }
