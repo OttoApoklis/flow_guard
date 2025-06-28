@@ -40,7 +40,7 @@
     "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
     "go.import.settings.migrated": "true",
-    "last_opened_file_path": "D:/code/flow_guard/UUID",
+    "last_opened_file_path": "D:/code/flow_guard/snowflack",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
@@ -49,6 +49,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\code\flow_guard\snowflack" />
       <recent name="D:\code\flow_guard\UUID" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
