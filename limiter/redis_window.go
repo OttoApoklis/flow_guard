@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/OttoApoklis/flow_guard/config"
 	logger "github.com/OttoApoklis/flow_guard/log"
-	"github.com/OttoApoklis/flow_guard/uuid"
+	"github.com/OttoApoklis/flow_guard/snowflack"
 	"github.com/redis/go-redis/v9"
 	"strconv"
 	"time"
@@ -52,7 +52,7 @@ func (r *RedisLimiter) Allow(ctx context.Context, key string) (bool, error) {
 	now := time.Now().UnixNano() / int64(time.Millisecond)  // 当前时间戳（毫秒）
 	windowStart := now - int64(windowSize/time.Millisecond) // 窗口起始时间
 	expireTimeSec := int64(windowSize/time.Second) + 1      // 过期时间（秒）
-	id := uuid.GetNamespacedUUIDWithTimestamp()             // 唯一 ID（如 Snowflake）
+	id := snowflack.GetSnowFlackID()                        // 唯一 ID（如 Snowflake）
 	member := fmt.Sprintf("%d-%s", now, id)                 // 唯一成员标识
 	logger.GlobalLogger.Info(fmt.Sprintf("member: %s", member))
 	// 执行 Lua 脚本
