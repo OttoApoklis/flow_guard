@@ -89,7 +89,7 @@ func GetSnowFlackID() int64 {
 // GetInstance returns the singleton instance of Singleton
 func GetSnowFlack() *Snowflake {
 	once.Do(func() {
-		instance, _ = NewSnowflake(2823719371, 9836182361)
+		instance, _ = NewSnowflake(1, 1)
 	})
 	return instance
 }
