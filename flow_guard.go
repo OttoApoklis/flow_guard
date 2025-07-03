@@ -30,11 +30,19 @@ func Init(configPath string) (*limiter.RedisLimiter, error) {
 	logger.GlobalLogger.Info("FlowGuard started successfully.")
 
 	// 3. 初始化 Redis 客户端
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     cfg.FlowGuard.RedisAddr,
-		Password: cfg.FlowGuard.Password,
-		DB:       0,
-	})
+	var rdb redis.Cmdable
+	if !cfg.FlowGuard.Redis.IsCluster {
+		rdb = redis.NewClient(&redis.Options{
+			Addr:     cfg.FlowGuard.Redis.RedisAddrs[0],
+			Password: cfg.FlowGuard.Redis.RedisPassword,
+			DB:       0,
+		})
+	} else {
+		rdb = redis.NewClusterClient(&redis.ClusterOptions{
+			Addrs:    cfg.FlowGuard.Redis.RedisAddrs,
+			Password: cfg.FlowGuard.Redis.RedisPassword,
+		})
+	}
 
 	// 简单连接测试
 	if err := rdb.Ping(ctx).Err(); err != nil {

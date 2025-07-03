@@ -25,9 +25,14 @@ type GalileoConfig struct {
 	APIURL string `yaml:"apiurl"`
 }
 
+type Redis struct {
+	IsCluster     bool     `yaml:"is_cluster"`
+	RedisAddrs    []string `yaml:"redis_addrs"`
+	RedisPassword string   `yaml:"redis_password"`
+}
+
 type FlowGuardConfig struct {
-	RedisAddr string        `yaml:"redis_addr"`
-	Password  string        `yaml:"password"`
+	Redis     Redis         `yaml:"redis"`
 	Rules     []Rule        `yaml:"rules"`
 	LogConfig LogConfig     `yaml:"log"`
 	Galileo   GalileoConfig `yaml:"galileo"`
