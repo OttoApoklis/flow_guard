@@ -127,7 +127,7 @@ var slidingWindowScript = redis.NewScript(`
 //	return count < int64(r.Rules[0].Limit), nil
 //}
 
-const shardCount = 10
+const shardCount = 50
 
 // 计算分片 key，比如用雪花ID做 mod
 func getShardKey(baseKey string) string {
@@ -192,14 +192,14 @@ func (r *RedisLimiter) Allow(ctx context.Context, baseKey string) (bool, error) 
 				logger.GlobalLogger.Info("redis current limiter err: redis sever advise TRYAGAIN")
 				continue
 			}
-			return true, fmt.Errorf("redis concurrent limiter err: run lua script failed: %v", err)
+			return true, errors.New(fmt.Sprintf("redis concurrent limiter err: run lua script failed: %v", err))
 		}
 		break
 	}
 
 	count, ok := result.(int64)
 	if !ok {
-		return false, fmt.Errorf("redis concurrent limiter err: invalid result type: %T", result)
+		return false, errors.New(fmt.Sprintf("redis concurrent limiter err: invalid result type: %T", result))
 	}
 
 	logger.GlobalLogger.Info(fmt.Sprintf("redis current limiter info: count: %d", count))
