@@ -12,14 +12,20 @@ import (
 
 func NewRateLimiter(l *limiter.RedisLimiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		path := c.FullPath()
-		fmt.Sprintf("路由：%s", path)
-		logger.GlobalLogger.Info(fmt.Sprintf("this path: %s", path))
-		if path == "" {
-			path = c.Request.URL.Path
+		rule := l.GetMatchedRule(c.FullPath()) // 根据 FullPath 或原始 URL 匹配
+		if rule == nil {
+			logger.GlobalLogger.Infof("no rate limit rule matched for path: %s", c.FullPath())
+			c.Next()
+			return
 		}
 
-		ok, err := l.Allow(context.Background(), path)
+		key := rule.Path // 使用规则中定义的限流 key 作为 Redis key
+		fmt.Sprintf("限流规则路由：%s", key)
+		logger.GlobalLogger.Info(fmt.Sprintf("this path: %s", key))
+		if key == "" {
+			key = c.Request.URL.Path
+		}
+		ok, err := l.Allow(context.Background(), key)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "rate limiter error"})
 			return
