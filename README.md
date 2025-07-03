@@ -30,7 +30,7 @@ flow_guard:
 ```
 ```go.mod
 require (
-	github.com/OttoApoklis/flow_guard v0.3.0
+	github.com/OttoApoklis/flow_guard v0.3.1
 	)
 ```
 

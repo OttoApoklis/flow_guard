@@ -2,12 +2,16 @@ package limiter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/OttoApoklis/flow_guard/config"
 	logger "github.com/OttoApoklis/flow_guard/log"
 	"github.com/OttoApoklis/flow_guard/snowflack"
 	"github.com/redis/go-redis/v9"
+	"math"
+	"net"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -48,31 +52,63 @@ var slidingWindowScript = redis.NewScript(`
 // 滑动窗口限流检查
 func (r *RedisLimiter) Allow(ctx context.Context, key string) (bool, error) {
 	client := r.Client
+	client.Ping(ctx)
 	windowSize := time.Duration(r.Rules[0].Window) * time.Second
-	now := time.Now().UnixNano() / int64(time.Millisecond)  // 当前时间戳（毫秒）
-	windowStart := now - int64(windowSize/time.Millisecond) // 窗口起始时间
-	expireTimeSec := int64(windowSize/time.Second) + 1      // 过期时间（秒）
-	id := snowflack.GetSnowFlackID()                        // 唯一 ID（如 Snowflake）
-	member := fmt.Sprintf("%d-%d", now, id)                 // 唯一成员标识
-	logger.GlobalLogger.Info(fmt.Sprintf("member: %s", member))
+	now := time.Now().UnixNano() / int64(time.Millisecond)      // 当前时间戳（毫秒）
+	windowStart := now - int64(windowSize/time.Millisecond)     // 窗口起始时间
+	expireTimeSec := int64(math.Ceil(windowSize.Seconds())) + 1 // 过期时间（秒）
+	id := snowflack.GetSnowFlackID()                            // 唯一 ID（如 Snowflake）
+	member := fmt.Sprintf("%d-%d", now, id)                     // 唯一成员标识
+	logger.GlobalLogger.Info(fmt.Sprintf("redis current limiter info: member: %s", member))
+	var (
+		result interface{}
+		err    error
+		netErr net.Error
+	)
 	// 执行 Lua 脚本
-	result, err := slidingWindowScript.Run(ctx, client, []string{key},
-		strconv.FormatInt(windowStart, 10),   // ARGV[1] windowStart
-		strconv.FormatInt(now, 10),           // ARGV[2] now
-		member,                               // ARGV[3] member
-		strconv.FormatInt(expireTimeSec, 10), // ARGV[4] expireTime
-	).Result()
-
-	if err != nil {
-		return false, fmt.Errorf("run lua script failed: %v", err)
+	for i := 0; i < 3; i++ {
+		ctx, cancel := context.WithTimeout(ctx, 1000*time.Millisecond)
+		defer cancel()
+		result, err = slidingWindowScript.Run(ctx, client, []string{key},
+			strconv.FormatInt(windowStart, 10),   // ARGV[1] windowStart
+			strconv.FormatInt(now, 10),           // ARGV[2] now
+			member,                               // ARGV[3] member
+			strconv.FormatInt(expireTimeSec, 10), // ARGV[4] expireTime
+		).Result()
+		// 对于上下文超时、网络超时、连接中断、Redis TRYAGAIN 情况进行重试
+		if err != nil {
+			if errors.Is(err, context.DeadlineExceeded) {
+				logger.GlobalLogger.Info(fmt.Sprintf("redis current limiter err: deadline Exceeded"))
+				continue
+			}
+			if errors.As(err, &netErr) && netErr != nil && netErr.Timeout() {
+				logger.GlobalLogger.Info(fmt.Sprintf("redis current limiter err: net timeout"))
+				continue
+			}
+			if strings.Contains(err.Error(), "connection refused") {
+				logger.GlobalLogger.Info(fmt.Sprintf("redis current limiter err: connection refused"))
+				continue
+			}
+			if strings.Contains(err.Error(), "EOF") {
+				logger.GlobalLogger.Info(fmt.Sprintf("redis current limiter err: connection refused by redis server"))
+				continue
+			}
+			if strings.Contains(err.Error(), "TRYAGAIN") {
+				logger.GlobalLogger.Info(fmt.Sprintf("redis current limiter err: redis sever advise TRYAGAIN"))
+				continue
+			}
+			// 出错时直接放行， 防止redis故障导致正常请求被拦截
+			return true, fmt.Errorf("redis concurrent limiter err: run lua script failed: %v", err)
+		}
+		break
 	}
 
 	// 解析结果
 	count, ok := result.(int64)
 	if !ok {
-		return false, fmt.Errorf("invalid result type: %T", result)
+		return false, fmt.Errorf("redis concurrent limiter err: invalid result type: %T", result)
 	}
-	logger.GlobalLogger.Info(fmt.Sprintf("count: %d", count))
+	logger.GlobalLogger.Info(fmt.Sprintf("redis current limiter info: count: %d", count))
 	// 判断是否超过最大请求数
 	return count < int64(r.Rules[0].Limit), nil
 }
